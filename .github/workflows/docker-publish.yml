@@ -1,0 +1,77 @@
+name: Build and publish Docker image
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      packages: write
+
+    env:
+      IMAGE_NAME: ssl-pinning
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=tag
+            type=sha
+
+      - run: echo "SHA_SHORT=${GITHUB_SHA:0:7}" >> $GITHUB_ENV
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.GH_PAT }}
+          build-args: |
+            GIT_COMMIT=${{ env.SHA_SHORT }}
+            IMAGE_ALPINE=3.22
+            IMAGE_GOLANG=1.26.1
+            VERSION=${{ github.ref_name }}
+            XDATA=${{ secrets.XDATA }}
+            ZDATA=${{ secrets.ZDATA }}
+
+      - name: Update versions in docs
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          sed -i "s|<span>Version</span><span>[^<]*</span>|<span>Version</span><span>${{ github.ref_name }}</span>|g" index.html
+
+          git add index.html
+          git diff --staged --quiet || git commit -m "docs: update versions to ${{ github.ref_name }} [skip ci]"
+          git push origin gh-pages
