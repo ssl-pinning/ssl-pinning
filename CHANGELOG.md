@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.0 (2026-04-04)
+
+
+### Features
+
+* refactoring code ([ae588e8](https://github.com/ssl-pinning/ssl-pinning/commit/ae588e8e6e86ec9746ec6cd577f8ee8afbb0cd9c))
+
 ## [1.1.1](https://github.com/ssl-pinning/ssl-pinning/compare/v1.1.0...v1.1.1) (2026-03-29)
 
 
