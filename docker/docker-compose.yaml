@@ -1,10 +1,10 @@
 services:
   ssl-pinning:
     container_name: ssl-pinning
-    # image: ghcr.io/dhalturin/ssl-pinning:v1.0.1
-    build:
-      context: ../
-      dockerfile: docker/Dockerfile
+    image: ghcr.io/ssl-pinning/ssl-pinning:v1.0.0
+    # build:
+    #   context: ../
+    #   dockerfile: docker/Dockerfile
     environment:
       SSL_PINNING_SERVER_LISTEN: 0.0.0.0:7500
       SSL_PINNING_SERVER_READ_TIMEOUT: 5s
