@@ -107,6 +107,7 @@ func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_", "-", "_"))
 	viper.SetEnvPrefix(pkg)
 
+	viper.SetDefault("server.key", "")
 	viper.SetDefault("server.listen", "127.0.0.1:7500")
 	viper.SetDefault("server.read_timeout", 5*time.Second)
 	viper.SetDefault("server.write_timeout", 5*time.Second)
