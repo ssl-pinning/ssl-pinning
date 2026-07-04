@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ssl-pinning / server</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      line-height: 1.6;
+    }
+
+    a { color: #58a6ff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    header { border-bottom: 1px solid #21262d; padding: 20px 0; }
+
+    .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+    .logo { font-size: 1.15rem; font-weight: 600; color: #e6edf3; }
+    .logo span { color: #8b949e; font-weight: 400; }
+
+    .hero { padding: 64px 0 52px; border-bottom: 1px solid #21262d; }
+    .hero h1 {
+      font-size: 2rem; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 14px; line-height: 1.25;
+    }
+    .hero p { font-size: 1.05rem; color: #8b949e; max-width: 620px; margin-bottom: 28px; }
+
+    .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge {
+      font-size: 0.75rem; font-weight: 500; padding: 4px 12px;
+      border-radius: 20px; border: 1px solid #30363d; color: #8b949e;
+    }
+    .badge.blue  { border-color: #1f6feb; color: #58a6ff; background: rgba(31,111,235,.08); }
+    .badge.green { border-color: #238636; color: #3fb950; background: rgba(35,134,54,.08); }
+    .badge.gray  { background: rgba(255,255,255,.04); }
+
+    .content { padding: 56px 0 64px; }
+    .grid { display: grid; grid-template-columns: 1fr 272px; gap: 52px; }
+
+    .section { margin-bottom: 52px; }
+    h2 {
+      font-size: 1.05rem; font-weight: 600; margin-bottom: 20px;
+      padding-bottom: 10px; border-bottom: 1px solid #21262d;
+    }
+    h3 {
+      font-size: 0.75rem; font-weight: 600; color: #8b949e;
+      text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px;
+    }
+
+    .step { display: flex; gap: 16px; margin-bottom: 32px; }
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+      background: #161b22; border: 1px solid #30363d;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 600; color: #8b949e; margin-top: 3px;
+    }
+    .step-body { flex: 1; min-width: 0; }
+    .step-body > p { color: #8b949e; font-size: 0.875rem; margin-bottom: 10px; }
+
+    pre {
+      background: #161b22; border: 1px solid #30363d; border-radius: 6px;
+      padding: 14px 16px; overflow-x: auto; font-size: 0.82rem;
+      line-height: 1.55; margin-bottom: 10px;
+    }
+    code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
+    .ic {
+      background: #161b22; border: 1px solid #30363d; border-radius: 3px;
+      padding: 1px 5px; font-size: 0.8em;
+      font-family: "SFMono-Regular", Consolas, monospace;
+    }
+
+    .cm { color: #8b949e; } .kw { color: #ff7b72; } .st { color: #a5d6ff; }
+    .nm { color: #79c0ff; } .vl { color: #a8ff80; } .op { color: #ff7b72; }
+
+    .note {
+      background: rgba(13,42,24,.6); border: 1px solid #238636; border-radius: 6px;
+      padding: 10px 14px; font-size: 0.83rem; color: #adbac7; margin-top: 10px;
+    }
+    .note strong { color: #3fb950; }
+    .warn {
+      background: rgba(40,30,0,.6); border: 1px solid #9e6a03; border-radius: 6px;
+      padding: 10px 14px; font-size: 0.83rem; color: #adbac7; margin-top: 10px;
+    }
+    .warn strong { color: #e3b341; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+    th {
+      text-align: left; padding: 8px 10px; color: #8b949e;
+      border-bottom: 1px solid #21262d; font-weight: 600;
+      font-size: 0.73rem; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    td { padding: 9px 10px; border-bottom: 1px solid #161b22; vertical-align: top; }
+    td:first-child code { color: #79c0ff; }
+    td.dim { color: #8b949e; }
+    tr:last-child td { border-bottom: none; }
+
+    .subsection { margin-bottom: 28px; }
+    .subsection:last-child { margin-bottom: 0; }
+    .subsection h3 { margin-bottom: 12px; border-bottom: 1px solid #161b22; padding-bottom: 6px; }
+
+    .sidebar { position: sticky; top: 24px; align-self: start; }
+    .sidebar-section { margin-bottom: 24px; }
+    .sidebar-section h3 { margin-bottom: 10px; }
+    .sidebar-link { display: block; font-size: 0.875rem; color: #8b949e; padding: 4px 0; }
+    .sidebar-link:hover { color: #58a6ff; text-decoration: none; }
+
+    .info-box {
+      background: #161b22; border: 1px solid #30363d;
+      border-radius: 8px; padding: 16px; font-size: 0.83rem; margin-bottom: 24px;
+    }
+    .info-box h3 { margin-bottom: 12px; border: none; padding: 0; }
+    .info-row { display: flex; justify-content: space-between; padding: 5px 0; color: #8b949e; border-bottom: 1px solid #21262d; }
+    .info-row:last-child { border-bottom: none; }
+    .info-row span:last-child { color: #e6edf3; }
+
+    footer { border-top: 1px solid #21262d; padding: 28px 0; font-size: 0.83rem; color: #8b949e; }
+    .footer-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+    .footer-links { display: flex; gap: 20px; }
+
+    @media (max-width: 760px) {
+      .grid { grid-template-columns: 1fr; }
+      .sidebar { position: static; }
+      .hero h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo">ssl-pinning <span>/</span> server</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <section class="hero">
+    <h1>Dynamic SSL Pinning<br>Server</h1>
+    <p>A service that continuously tracks TLS certificate public keys of target HTTPS endpoints,
+    stores fingerprints in a configurable backend, and exposes them as a cryptographically signed
+    JSON registry — enabling pin rotation without app updates.</p>
+    <div class="badges">
+      <span class="badge blue">Docker</span>
+      <span class="badge gray">Go 1.26+</span>
+      <span class="badge gray">Prometheus</span>
+      <span class="badge green">BSD-3-Clause</span>
+    </div>
+  </section>
+
+  <div class="content">
+    <div class="grid">
+
+      <div>
+
+        <!-- Getting Started -->
+        <section class="section" id="getting-started">
+          <h2>Getting started</h2>
+
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h3>Generate RSA signing keys</h3>
+              <p>The server signs the pin registry with a 4096-bit RSA private key.
+              The public key is embedded in client SDKs for signature verification.</p>
+              <pre><code>openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out prv.pem
+openssl rsa -pubout -in prv.pem -out pub.pem</code></pre>
+              <div class="warn">
+                <strong>Important:</strong> keep <span class="ic">prv.pem</span> secret —
+                it never leaves the server. Only <span class="ic">pub.pem</span> is distributed to clients.
+              </div>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h3>Create config.yaml</h3>
+              <pre><code><span class="nm">keys</span>:
+  - <span class="nm">fqdn</span>: <span class="st">api.example.com</span>
+
+<span class="nm">server</span>:
+  <span class="nm">listen</span>: <span class="st">0.0.0.0:7500</span>
+
+<span class="nm">storage</span>:
+  <span class="nm">type</span>: <span class="st">memory</span>
+
+<span class="nm">tls</span>:
+  <span class="nm">dir</span>: <span class="st">/etc/ssl-pinning/tls</span>
+  <span class="nm">dump_interval</span>: <span class="st">30s</span>
+  <span class="nm">timeout</span>: <span class="st">10s</span></code></pre>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h3>Run with Docker</h3>
+              <pre><code>docker run -d \
+  -v $(pwd)/config.yaml:/etc/ssl-pinning/config.yaml \
+  -v $(pwd)/prv.pem:/etc/ssl-pinning/tls/prv.pem \
+  -p 7500:7500 -p 9090:9090 \
+  ghcr.io/ssl-pinning/ssl-pinning:latest up</code></pre>
+            </div>
+          </div>
+
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <h3>Verify</h3>
+              <pre><code>curl http://localhost:7500/api/v1/api.example.com.json</code></pre>
+              <div class="note">
+                <strong>Kubernetes:</strong> use the
+                <a href="https://ssl-pinning.github.io/charts/">Helm chart</a>
+                for production deployments.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- How it works -->
+        <section class="section" id="how-it-works">
+          <h2>How it works</h2>
+          <p style="color:#8b949e;font-size:.875rem;margin-bottom:16px;">
+            Traditional SSL pinning relies on static fingerprints embedded in clients.
+            When certificates rotate, pins go stale. <span class="ic">ssl-pinning</span> solves this with a dynamic registry.
+          </p>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <p>Server periodically dials each configured FQDN on port 443 and extracts the public key from the TLS certificate chain.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <p>Fingerprints are computed and stored in the configured storage backend (memory, filesystem, Redis, or Postgres).</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <p>The JSON payload is <strong>cryptographically signed</strong> with the RSA private key before being served to clients.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-body">
+              <p>Client SDKs fetch the registry, verify the RSA signature, and enforce pinning — even across certificate rotations.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-body">
+              <p>Even if an attacker obtains a fraudulent certificate for a target domain, they cannot forge a valid signed fingerprint list.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Keys config -->
+        <section class="section" id="keys">
+          <h2>Keys configuration</h2>
+          <p style="color:#8b949e;font-size:.875rem;margin-bottom:16px;">
+            Each entry under <span class="ic">keys</span> defines a domain to track.
+            Multiple entries can share the same <span class="ic">file</span> to group them into one API response.
+          </p>
+          <table>
+            <thead><tr><th>Field</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>fqdn</code></td><td class="dim">—</td><td class="dim">Required. Domain to dial on port 443 for certificate tracking.</td></tr>
+              <tr><td><code>domainName</code></td><td class="dim"><code>*.{fqdn}</code></td><td class="dim">Hostname pattern for certificate pinner on the client side.</td></tr>
+              <tr><td><code>file</code></td><td class="dim"><code>{fqdn}.json</code></td><td class="dim">Groups this entry into a named response file. Multiple FQDNs can share the same file.</td></tr>
+            </tbody>
+          </table>
+          <pre style="margin-top:14px"><code><span class="nm">keys</span>:
+  - <span class="nm">fqdn</span>: <span class="st">google.com</span>
+    <span class="nm">domainName</span>: <span class="st">"www.google.com"</span>
+  - <span class="nm">fqdn</span>: <span class="st">mail.google.com</span>
+    <span class="nm">file</span>: <span class="st">google.com.json</span>      <span class="cm"># grouped into the same endpoint</span>
+    <span class="nm">domainName</span>: <span class="st">"mail.google.com"</span></code></pre>
+          <p style="color:#8b949e;font-size:.83rem;margin-top:10px;">
+            Both entries are served at <span class="ic">GET /api/v1/google.com.json</span>
+          </p>
+        </section>
+
+        <!-- Storage -->
+        <section class="section" id="storage">
+          <h2>Storage backends</h2>
+          <table>
+            <thead><tr><th>Type</th><th>DSN format</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><code>memory</code></td><td class="dim">—</td><td class="dim">Ephemeral. Lost on restart. Development only.</td></tr>
+              <tr><td><code>fs</code></td><td class="dim">—</td><td class="dim">Writes signed JSON to <code>dump_dir</code>. Serves files directly.</td></tr>
+              <tr><td><code>redis</code></td><td class="dim"><code>redis://:pass@host:6379/0</code></td><td class="dim">Shared state across multiple instances.</td></tr>
+              <tr><td><code>postgres</code></td><td class="dim"><code>postgres://user:pass@host/db</code></td><td class="dim">Persistent. Migrations run automatically on startup.</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Configuration reference -->
+        <section class="section" id="config">
+          <h2>Configuration reference</h2>
+          <p style="color:#8b949e;font-size:.875rem;margin-bottom:20px;">
+            All settings can be set via config file, environment variable, or CLI flag.
+            Priority: <strong style="color:#e6edf3">flags &gt; env vars &gt; config file &gt; defaults</strong>.
+            Env var format: <span class="ic">SSL_PINNING_</span> prefix + upper snake case
+            (e.g. <span class="ic">log.level</span> → <span class="ic">SSL_PINNING_LOG_LEVEL</span>).
+          </p>
+
+          <div class="subsection">
+            <h3>Server</h3>
+            <table>
+              <thead><tr><th>Env var / Flag</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>SSL_PINNING_SERVER_LISTEN</code><br><code>--server-listen</code></td><td class="dim">127.0.0.1:7500</td><td class="dim">HTTP listen address and port</td></tr>
+                <tr><td><code>SSL_PINNING_SERVER_READ_TIMEOUT</code><br><code>--server-read-timeout</code></td><td class="dim">5s</td><td class="dim">Request read timeout</td></tr>
+                <tr><td><code>SSL_PINNING_SERVER_WRITE_TIMEOUT</code><br><code>--server-write-timeout</code></td><td class="dim">5s</td><td class="dim">Response write timeout</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="subsection">
+            <h3>Storage</h3>
+            <table>
+              <thead><tr><th>Env var / Flag</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>SSL_PINNING_STORAGE_TYPE</code><br><code>--storage-type</code></td><td class="dim">memory</td><td class="dim"><code>memory</code> · <code>fs</code> · <code>redis</code> · <code>postgres</code></td></tr>
+                <tr><td><code>SSL_PINNING_STORAGE_DSN</code><br><code>--storage-dsn</code></td><td class="dim">—</td><td class="dim">Connection string for redis or postgres</td></tr>
+                <tr><td><code>SSL_PINNING_STORAGE_DUMP_DIR</code><br><code>--storage-dump-dir</code></td><td class="dim">/tmp</td><td class="dim">Directory for fs/memory persistence dumps</td></tr>
+                <tr><td><code>SSL_PINNING_STORAGE_MAX_IDLE_CONNS</code><br><code>--storage-max-idle-conns</code></td><td class="dim">5</td><td class="dim">Max idle connections in pool</td></tr>
+                <tr><td><code>SSL_PINNING_STORAGE_MAX_OPEN_CONNS</code><br><code>--storage-max-open-conns</code></td><td class="dim">5</td><td class="dim">Max open connections in pool</td></tr>
+                <tr><td><code>SSL_PINNING_STORAGE_CONN_MAX_IDLE_TIME</code><br><code>--storage-conn-max-idle-time</code></td><td class="dim">5m</td><td class="dim">Max idle time for a connection</td></tr>
+                <tr><td><code>SSL_PINNING_STORAGE_CONN_MAX_LIFETIME</code><br><code>--storage-conn-max-lifetime</code></td><td class="dim">30m</td><td class="dim">Max lifetime of a connection</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="subsection">
+            <h3>TLS</h3>
+            <table>
+              <thead><tr><th>Env var / Flag</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>SSL_PINNING_TLS_DIR</code></td><td class="dim">{config-path}/tls</td><td class="dim">Directory containing <code>prv.pem</code> and <code>pub.pem</code></td></tr>
+                <tr><td><code>SSL_PINNING_TLS_DUMP_INTERVAL</code><br><code>--storage-dump-interval</code></td><td class="dim">5s</td><td class="dim">How often keys are flushed to storage</td></tr>
+                <tr><td><code>SSL_PINNING_TLS_TIMEOUT</code></td><td class="dim">5s</td><td class="dim">TLS dial timeout per domain</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="subsection">
+            <h3>Logging</h3>
+            <table>
+              <thead><tr><th>Env var / Flag</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>SSL_PINNING_LOG_FORMAT</code><br><code>--log-format</code></td><td class="dim">json</td><td class="dim"><code>json</code> · <code>text</code></td></tr>
+                <tr><td><code>SSL_PINNING_LOG_LEVEL</code><br><code>--log-level</code></td><td class="dim">info</td><td class="dim"><code>debug</code> · <code>info</code> · <code>warn</code> · <code>error</code></td></tr>
+                <tr><td><code>SSL_PINNING_LOG_PRETTY</code><br><code>--log-pretty</code></td><td class="dim">false</td><td class="dim">Pretty-print log output</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="subsection">
+            <h3>Global CLI flags</h3>
+            <table>
+              <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+              <tbody>
+                <tr><td><code>--config-file</code></td><td class="dim">config.yaml</td><td class="dim">Configuration file name</td></tr>
+                <tr><td><code>--config-path</code></td><td class="dim">/etc/ssl-pinning</td><td class="dim">Configuration file directory</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- API -->
+        <section class="section" id="api">
+          <h2>API</h2>
+          <table>
+            <thead><tr><th>Endpoint</th><th>Port</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>GET /api/v1/{file}</code></td><td class="dim">7500</td><td class="dim">Signed JSON pin registry (e.g. <code>/api/v1/api.example.com.json</code>)</td></tr>
+              <tr><td><code>GET /health/liveness</code></td><td class="dim">9090</td><td class="dim">Liveness probe</td></tr>
+              <tr><td><code>GET /health/readiness</code></td><td class="dim">9090</td><td class="dim">Readiness probe</td></tr>
+              <tr><td><code>GET /health/startup</code></td><td class="dim">9090</td><td class="dim">Startup probe</td></tr>
+              <tr><td><code>GET /metrics</code></td><td class="dim">9090</td><td class="dim">Prometheus metrics</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Cryptography -->
+        <section class="section" id="cryptography">
+          <h2>Cryptography</h2>
+          <table>
+            <thead><tr><th>Property</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td class="dim">Signing algorithm</td><td class="dim">RSA PKCS#1 v1.5</td></tr>
+              <tr><td class="dim">Key size</td><td class="dim">4096 bit</td></tr>
+              <tr><td class="dim">Hash</td><td class="dim">SHA-512</td></tr>
+              <tr><td class="dim">Canonicalization</td><td class="dim">JCS (RFC 8785) over the <code>payload</code> field</td></tr>
+              <tr><td class="dim">Key format</td><td class="dim">PEM (<code>prv.pem</code> / <code>pub.pem</code>)</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+
+        <div class="info-box">
+          <h3>Release info</h3>
+          <div class="info-row"><span>Version</span><span>v0.1.0</span></div>
+          <div class="info-row"><span>Go</span><span>1.26+</span></div>
+          <div class="info-row"><span>Image</span><span><a href="https://github.com/ssl-pinning/ssl-pinning/pkgs/container/ssl-pinning">ghcr.io</a></span></div>
+          <div class="info-row"><span>License</span><span>BSD-3-Clause</span></div>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>On this page</h3>
+          <a class="sidebar-link" href="#getting-started">Getting started</a>
+          <a class="sidebar-link" href="#how-it-works">How it works</a>
+          <a class="sidebar-link" href="#keys">Keys configuration</a>
+          <a class="sidebar-link" href="#storage">Storage backends</a>
+          <a class="sidebar-link" href="#config">Configuration reference</a>
+          <a class="sidebar-link" href="#api">API</a>
+          <a class="sidebar-link" href="#cryptography">Cryptography</a>
+        </div>
+
+        <div class="sidebar-section">
+          <h3>Links</h3>
+          <a class="sidebar-link" href="https://github.com/ssl-pinning/ssl-pinning">GitHub — server</a>
+          <a class="sidebar-link" href="https://ssl-pinning.github.io/charts/">Helm chart</a>
+          <a class="sidebar-link" href="https://ssl-pinning.github.io/apple-sdk/">Apple SDK</a>
+          <a class="sidebar-link" href="https://ssl-pinning.github.io/android-sdk/">Android SDK</a>
+        </div>
+
+      </aside>
+
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <span>ssl-pinning / server — BSD-3-Clause</span>
+      <div class="footer-links">
+        <a href="https://github.com/ssl-pinning/ssl-pinning">GitHub</a>
+        <a href="https://ssl-pinning.github.io/charts/">Helm chart</a>
+        <a href="https://ssl-pinning.github.io/android-sdk/">Android SDK</a>
+        <a href="https://ssl-pinning.github.io/apple-sdk/">Apple SDK</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
