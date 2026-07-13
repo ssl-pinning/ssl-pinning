@@ -27,7 +27,6 @@ tasks:
     desc: Build cmd {{ .PACKAGE }}
     env:
       GOOS: "{{ .GOOS }}"
-      GOARCH: amd64
       CGO_ENABLED: "0"
       GO111MODULE: "on"
     vars:

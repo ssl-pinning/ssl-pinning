@@ -1,13 +1,15 @@
 services:
   ssl-pinning:
     container_name: ssl-pinning
-    image: ghcr.io/ssl-pinning/ssl-pinning:v1.1.0
+    image: ghcr.io/ssl-pinning/ssl-pinning:v1.0.1
     environment:
+      SSL_PINNING_LOG_LEVEL: debug
+      SSL_PINNING_LOG_PRETTY: true
       SSL_PINNING_SERVER_LISTEN: 0.0.0.0:7500
       SSL_PINNING_SERVER_READ_TIMEOUT: 5s
       SSL_PINNING_SERVER_WRITE_TIMEOUT: 5s
 
-      SSL_PINNING_STORAGE_TYPE: memory
+      SSL_PINNING_STORAGE_TYPE: redis
       SSL_PINNING_STORAGE_DSN: redis://valkey:6379/0?maintnotifications=disabled
       SSL_PINNING_STORAGE_DUMP_DIR: /opt/ssl-pinning/storage-dump
 

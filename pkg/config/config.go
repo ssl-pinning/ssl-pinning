@@ -52,7 +52,13 @@ type Config struct {
 	Server  ConfigServer      `mapstructure:"server"`
 	Storage ConfigStorage     `mapstructure:"storage"`
 	TLS     ConfigTLS         `mapstructure:"tls"`
+	UI      ConfigUI          `mapstructure:"ui"`
 	UUID    uuid.UUID
+}
+
+// ConfigUI defines settings for the embedded web UI.
+type ConfigUI struct {
+	TokenTTL time.Duration `mapstructure:"token_ttl"`
 }
 
 // ConfigLog defines logging configuration for the application.
