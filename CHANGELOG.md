@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/ssl-pinning/ssl-pinning/compare/v1.0.1...v1.1.0) (2026-07-13)
+
+
+### Features
+
+* add embedded web UI ([3fa770f](https://github.com/ssl-pinning/ssl-pinning/commit/3fa770f9a5fa1f4029798520e1cd60c3696848fa))
+
 ## [1.0.1](https://github.com/ssl-pinning/ssl-pinning/compare/v1.0.0...v1.0.1) (2026-07-04)
 
 
