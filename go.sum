@@ -126,6 +126,8 @@ github.com/ssl-pinning/core v1.6.0 h1:LK3HDWxpZ9U7YEqTHF1dtxot3Ty5SzGCt80WaaAdrD
 github.com/ssl-pinning/core v1.6.0/go.mod h1:vBtoYqPRtQ8biYw0czC9rtsdqzUIcEbp+s0MyT1mxpk=
 github.com/ssl-pinning/core v1.6.1 h1:hzpOyq+DKo2baDS5BCIbAjxpQgPwuHsJdrJdJoaTWDQ=
 github.com/ssl-pinning/core v1.6.1/go.mod h1:vBtoYqPRtQ8biYw0czC9rtsdqzUIcEbp+s0MyT1mxpk=
+github.com/ssl-pinning/core v1.6.2 h1:Q5K8KYYQj8C3yPcvx7ZyBbCgI0SmKk8Vyjop3Z3Dz7o=
+github.com/ssl-pinning/core v1.6.2/go.mod h1:vBtoYqPRtQ8biYw0czC9rtsdqzUIcEbp+s0MyT1mxpk=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/subosito/gotenv v1.6.0 h1:9NlTDc1FTs4qu0DDq7AEtTPNw6SVm7uBMsUCUjABIf8=
